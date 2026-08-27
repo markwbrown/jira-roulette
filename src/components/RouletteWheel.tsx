@@ -1,5 +1,7 @@
 import type { TransitionEvent } from 'react'
 import {
+  BALL_POCKET_CY,
+  BALL_RADIUS,
   CX,
   CY,
   R,
@@ -46,9 +48,11 @@ function labelFontSize(count: number): number {
 
 export interface RouletteWheelProps {
   issues: JiraIssue[]
-  rotation: number
+  wheelRotation: number
+  ballRotation: number
   spinning: boolean
   spinSeconds: number
+  spinId: number
   winnerIndex: number | null
   spinDisabled: boolean
   onSpin: () => void
@@ -57,9 +61,11 @@ export interface RouletteWheelProps {
 
 export function RouletteWheel({
   issues,
-  rotation,
+  wheelRotation,
+  ballRotation,
   spinning,
   spinSeconds,
+  spinId,
   winnerIndex,
   spinDisabled,
   onSpin,
@@ -70,18 +76,18 @@ export function RouletteWheel({
   const landed = winnerIndex !== null && !spinning
 
   const handleTransitionEnd = (e: TransitionEvent<HTMLDivElement>) => {
-    if (e.propertyName === 'transform') onSpinEnd()
+    if (e.target === e.currentTarget && e.propertyName === 'transform') onSpinEnd()
   }
+
+  const spinEasing = 'cubic-bezier(0.12, 0, 0.05, 1)'
 
   return (
     <div className="relative mx-auto aspect-square w-full max-w-[560px] select-none">
       <div
         className="h-full w-full"
         style={{
-          transform: `rotate(${rotation}deg)`,
-          transition: spinning
-            ? `transform ${spinSeconds}s cubic-bezier(0.12, 0, 0.05, 1)`
-            : undefined,
+          transform: `rotate(${wheelRotation}deg)`,
+          transition: spinning ? `transform ${spinSeconds}s ${spinEasing}` : undefined,
         }}
         onTransitionEnd={handleTransitionEnd}
       >
@@ -155,12 +161,35 @@ export function RouletteWheel({
         </svg>
       </div>
 
-      {/* pointer, fixed at 12 o'clock */}
-      <div className="pointer-events-none absolute -top-2 left-1/2 z-10 -translate-x-1/2 drop-shadow-[0_2px_3px_rgba(0,0,0,0.6)]">
-        <svg width="36" height="34" viewBox="0 0 36 34">
-          <path d="M3 2 H33 L18 30 Z" fill={BRASS} stroke="#4a3a08" strokeWidth={1.5} />
-        </svg>
-      </div>
+      {/* the ball: orbits counter-clockwise on its own overlay, independent of
+          the wheel's rotation, then falls from the rim track into a pocket */}
+      <svg
+        viewBox={`0 0 ${WHEEL_SIZE} ${WHEEL_SIZE}`}
+        className="pointer-events-none absolute inset-0 z-10 h-full w-full"
+      >
+        <g
+          style={{
+            transform: `rotate(${ballRotation}deg)`,
+            transformOrigin: `${CX}px ${CY}px`,
+            transition: spinning ? `transform ${spinSeconds}s ${spinEasing}` : undefined,
+          }}
+        >
+          <circle
+            key={spinId}
+            cx={CX}
+            cy={BALL_POCKET_CY}
+            r={BALL_RADIUS}
+            fill="#f6efdf"
+            stroke="rgba(0,0,0,0.4)"
+            strokeWidth={1}
+            className={spinId > 0 ? 'ball-run' : undefined}
+            style={{
+              filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.55))',
+              ['--spin-duration' as string]: `${spinSeconds}s`,
+            }}
+          />
+        </g>
+      </svg>
 
       {/* hub doubles as the spin control */}
       <button

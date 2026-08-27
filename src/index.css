@@ -36,3 +36,33 @@ body {
 .winner-glow {
   filter: drop-shadow(0 0 12px rgb(232 197 90 / 0.85));
 }
+
+/*
+ * The ball's radial position during a spin. Angular travel is a transform
+ * transition on the parent group; this only moves the ball between the rim
+ * track (cy 24) and the pocket floor (cy 43, matching BALL_POCKET_CY), with a
+ * little bounce as it drops. Timed as a fraction of the spin duration so it
+ * scales with reduced-motion spins too.
+ */
+@keyframes ball-run {
+  0% {
+    cy: 43px;
+  }
+  6%,
+  74% {
+    cy: 24px;
+  }
+  84% {
+    cy: 43px;
+  }
+  90% {
+    cy: 34px;
+  }
+  100% {
+    cy: 43px;
+  }
+}
+
+.ball-run {
+  animation: ball-run var(--spin-duration, 4.5s) linear forwards;
+}

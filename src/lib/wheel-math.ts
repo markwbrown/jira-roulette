@@ -3,6 +3,11 @@ export const CX = WHEEL_SIZE / 2
 export const CY = WHEEL_SIZE / 2
 export const R = 240
 
+/** Ball geometry, in SVG user units. */
+export const BALL_RADIUS = 9
+export const BALL_TRACK_CY = CY - 226 // orbiting: just inside the rim
+export const BALL_POCKET_CY = CY - 207 // at rest: settled into a pocket
+
 /** Angles are degrees measured clockwise from 12 o'clock. */
 function polar(angleDeg: number, radius: number): [number, number] {
   const rad = ((angleDeg - 90) * Math.PI) / 180
@@ -50,32 +55,57 @@ export function pickWinnerIndex(count: number): number {
   return buf[0] % count
 }
 
-/**
- * The wheel is rotated clockwise by `rotation` degrees, and the pointer sits at
- * 12 o'clock (angle 0). A segment point at initial angle `a` ends up at
- * `(a + rotation) mod 360`, so the winner lands under the pointer when
- * `rotation ≡ -winnerMid (mod 360)`.
- */
-export function targetRotation(
-  currentRotation: number,
-  winnerIndex: number,
-  count: number,
-): number {
-  const segment = 360 / count
-  const jitter = (randFloat() - 0.5) * segment * 0.8
-  const winnerMid = midAngle(winnerIndex, count) + jitter
-  const desired = ((360 - (winnerMid % 360)) % 360 + 360) % 360
-  const fullSpins = 4 + Math.floor(randFloat() * 3) // 4–6 full turns
-  const current = ((currentRotation % 360) + 360) % 360
-  let delta = desired - current
-  if (delta <= 0) delta += 360
-  return currentRotation + fullSpins * 360 + delta
+const mod360 = (deg: number): number => ((deg % 360) + 360) % 360
+
+export interface SpinTargets {
+  wheelRotation: number
+  ballRotation: number
 }
 
-/** Inverse of targetRotation: which segment index sits under the pointer. */
-export function winnerFromRotation(rotation: number, count: number): number {
-  const pointerAngle = ((360 - (rotation % 360)) % 360 + 360) % 360
-  return Math.floor(pointerAngle / (360 / count)) % count
+/**
+ * Real-roulette kinematics: the wheel spins clockwise to an ARBITRARY final
+ * rotation, while the ball races counter-clockwise around the rim. Both are
+ * solved so that when they stop together, the ball's absolute angle coincides
+ * with the winning pocket's final absolute angle:
+ *
+ *   ballRotation ≡ pocketMid + wheelRotation  (mod 360)
+ *
+ * A pocket at wheel-frame angle `a` ends up at absolute angle `a + wheelRotation`,
+ * so the ball (whose absolute angle IS its rotation) must stop there.
+ */
+export function spinTargets(
+  currentWheelRotation: number,
+  currentBallRotation: number,
+  winnerIndex: number,
+  count: number,
+): SpinTargets {
+  const segment = 360 / count
+  // the wheel stops wherever it likes — no pointer to line up with any more
+  const wheelRotation =
+    currentWheelRotation + (4 + Math.floor(randFloat() * 3)) * 360 + randFloat() * 360
+
+  // land the ball inside the winner's pocket, off-center by a little jitter
+  const jitter = (randFloat() - 0.5) * segment * 0.7
+  const pocketAbsolute = mod360(midAngle(winnerIndex, count) + jitter + wheelRotation)
+
+  // ball travels the OPPOSITE direction: 6–8 full turns, then the remainder
+  // needed to stop exactly on the pocket
+  let remainder = mod360(currentBallRotation - pocketAbsolute)
+  if (remainder === 0) remainder = 360
+  const ballRotation =
+    currentBallRotation - (6 + Math.floor(randFloat() * 3)) * 360 - remainder
+
+  return { wheelRotation, ballRotation }
+}
+
+/** Inverse of spinTargets: which pocket the ball is resting in. */
+export function winnerFromSpin(
+  wheelRotation: number,
+  ballRotation: number,
+  count: number,
+): number {
+  const pocketAngle = mod360(ballRotation - wheelRotation)
+  return Math.floor(pocketAngle / (360 / count)) % count
 }
 
 export type LabelTier = 'full' | 'key' | 'none'

@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useRef } from 'react'
-import { pickWinnerIndex, targetRotation } from '../lib/wheel-math'
+import { pickWinnerIndex, spinTargets } from '../lib/wheel-math'
 import type { JiraIssue } from '../types/jira'
 import { EmptyState } from './EmptyState'
 import { ErrorBanner } from './ErrorBanner'
@@ -8,13 +8,21 @@ import { ISSUE_FETCH_CAP } from '../api/issues'
 
 interface SpinState {
   phase: 'idle' | 'spinning' | 'landed'
-  rotation: number
+  wheelRotation: number
+  ballRotation: number
   winnerIndex: number | null
   snapshot: JiraIssue[] | null
+  spinId: number
 }
 
 type SpinAction =
-  | { type: 'spin'; rotation: number; winnerIndex: number; snapshot: JiraIssue[] }
+  | {
+      type: 'spin'
+      wheelRotation: number
+      ballRotation: number
+      winnerIndex: number
+      snapshot: JiraIssue[]
+    }
   | { type: 'landed' }
   | { type: 'reset' }
 
@@ -23,14 +31,16 @@ function spinReducer(state: SpinState, action: SpinAction): SpinState {
     case 'spin':
       return {
         phase: 'spinning',
-        rotation: action.rotation,
+        wheelRotation: action.wheelRotation,
+        ballRotation: action.ballRotation,
         winnerIndex: action.winnerIndex,
         snapshot: action.snapshot,
+        spinId: state.spinId + 1,
       }
     case 'landed':
       return { ...state, phase: 'landed' }
     case 'reset':
-      // keep the accumulated rotation so the wheel never jumps backwards
+      // keep the accumulated rotations so wheel and ball never jump
       return { ...state, phase: 'idle', winnerIndex: null, snapshot: null }
   }
 }
@@ -54,9 +64,11 @@ export function WheelPanel({
 }: WheelPanelProps) {
   const [spin, dispatch] = useReducer(spinReducer, {
     phase: 'idle',
-    rotation: 0,
+    wheelRotation: 0,
+    ballRotation: 0,
     winnerIndex: null,
     snapshot: null,
+    spinId: 0,
   })
 
   // new issue data invalidates a finished round (but never interrupts a live spin)
@@ -74,8 +86,13 @@ export function WheelPanel({
   const handleSpin = () => {
     if (spin.phase === 'spinning' || issues.length === 0) return
     const winnerIndex = pickWinnerIndex(issues.length)
-    const rotation = targetRotation(spin.rotation, winnerIndex, issues.length)
-    dispatch({ type: 'spin', rotation, winnerIndex, snapshot: issues })
+    const { wheelRotation, ballRotation } = spinTargets(
+      spin.wheelRotation,
+      spin.ballRotation,
+      winnerIndex,
+      issues.length,
+    )
+    dispatch({ type: 'spin', wheelRotation, ballRotation, winnerIndex, snapshot: issues })
   }
 
   const handleSpinEnd = () => {
@@ -126,9 +143,11 @@ export function WheelPanel({
       </div>
       <RouletteWheel
         issues={wheelIssues}
-        rotation={spin.rotation}
+        wheelRotation={spin.wheelRotation}
+        ballRotation={spin.ballRotation}
         spinning={spin.phase === 'spinning'}
         spinSeconds={spinSeconds}
+        spinId={spin.spinId}
         winnerIndex={spin.winnerIndex}
         spinDisabled={spin.phase === 'spinning' || issues.length === 0}
         onSpin={handleSpin}

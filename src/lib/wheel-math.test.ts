@@ -4,8 +4,8 @@ import {
   midAngle,
   pickWinnerIndex,
   segmentPath,
-  targetRotation,
-  winnerFromRotation,
+  spinTargets,
+  winnerFromSpin,
 } from './wheel-math'
 
 describe('segmentPath', () => {
@@ -24,26 +24,40 @@ describe('segmentPath', () => {
   })
 })
 
-describe('winner rotation round-trip', () => {
-  it('decoding targetRotation always yields the chosen winner', () => {
+describe('wheel + ball spin round-trip', () => {
+  it('the ball always stops in the chosen winner pocket', () => {
     for (const n of [1, 2, 3, 7, 24, 61, 137]) {
       for (let trial = 0; trial < 50; trial++) {
         const winner = pickWinnerIndex(n)
-        const start = Math.random() * 100_000
-        const rotation = targetRotation(start, winner, n)
-        expect(rotation).toBeGreaterThan(start)
-        expect(winnerFromRotation(rotation, n)).toBe(winner)
+        const startWheel = Math.random() * 100_000
+        const startBall = -Math.random() * 100_000
+        const { wheelRotation, ballRotation } = spinTargets(startWheel, startBall, winner, n)
+        expect(winnerFromSpin(wheelRotation, ballRotation, n)).toBe(winner)
       }
     }
   })
 
-  it('rotation is monotonically increasing across consecutive spins', () => {
-    let rotation = 0
+  it('wheel and ball travel in opposite directions, several turns each', () => {
+    let wheel = 0
+    let ball = 0
     for (let i = 0; i < 20; i++) {
-      const next = targetRotation(rotation, pickWinnerIndex(12), 12)
-      expect(next).toBeGreaterThan(rotation + 360 * 4)
-      rotation = next
+      const targets = spinTargets(wheel, ball, pickWinnerIndex(12), 12)
+      expect(targets.wheelRotation).toBeGreaterThan(wheel + 360 * 4)
+      expect(targets.ballRotation).toBeLessThan(ball - 360 * 6)
+      wheel = targets.wheelRotation
+      ball = targets.ballRotation
     }
+  })
+
+  it('wheel final rotation is unconstrained (varies mod 360)', () => {
+    const finals = new Set<number>()
+    for (let i = 0; i < 30; i++) {
+      const { wheelRotation } = spinTargets(0, 0, 0, 10)
+      finals.add(Math.round(((wheelRotation % 360) + 360) % 360 / 36))
+    }
+    // with 30 samples across 10 buckets, an actually-random stop position
+    // should hit well more than one bucket
+    expect(finals.size).toBeGreaterThan(3)
   })
 })
 

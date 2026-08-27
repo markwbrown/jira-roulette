@@ -5,8 +5,8 @@ and status; the wheel picks the next ticket and lets you assign it in one click.
 
 ![The full flow: a wheel loaded with open tickets spins, lands on a winner, and the winner card pops up](docs/screenshots/spin.gif)
 
-When the wheel lands, the winner glows and its card appears with the ticket's
-status, description, epic, and a one-click assign action:
+When the ball drops, the winning pocket glows and its card appears with the
+ticket's status, description, epic, and a one-click assign action:
 
 ![A landed spin: the winning pocket highlighted, with the winner card showing ticket details and an Assign to… button](docs/screenshots/winner.png)
 
@@ -37,8 +37,11 @@ Open <http://localhost:5173/?mock=1> to play with ~40 fake tickets.
   or *Planning*:
 
   ![The filter bar with the Refine statuses panel open, listing the project's workflow statuses grouped by category](docs/screenshots/filters.png)
-- **The wheel** alternates red/black pockets like a real rotor; an odd ticket
-  count gets a single green "zero" pocket. The hub is the spin button.
+- **The wheel** alternates red/black pockets like a real rotor, and a ball
+  races the opposite direction around the rim before dropping into the winning
+  pocket — the wheel stops wherever it stops, so the ball can land at any
+  position. An odd ticket count gets a single green "zero" pocket. The hub is
+  the spin button.
 - **Assigning** calls `PUT /rest/api/3/issue/{key}/assignee`, so the token's
   account needs assign permission in the project.
 - Fetching caps at 400 tickets per spin table; a banner tells you to narrow
