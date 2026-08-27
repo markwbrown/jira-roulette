@@ -3,9 +3,9 @@ export const CX = WHEEL_SIZE / 2
 export const CY = WHEEL_SIZE / 2
 export const R = 240
 
-/** Ball geometry, in SVG user units. */
+/** Ball geometry, in SVG user units. The radial path during a spin (outer
+ * apron → inward spiral → pocket) lives in the ball-run keyframes in index.css. */
 export const BALL_RADIUS = 9
-export const BALL_TRACK_CY = CY - 226 // orbiting: just inside the rim
 export const BALL_POCKET_CY = CY - 207 // at rest: settled into a pocket
 
 /** Angles are degrees measured clockwise from 12 o'clock. */

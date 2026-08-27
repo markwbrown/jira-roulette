@@ -165,7 +165,7 @@ export function RouletteWheel({
           the wheel's rotation, then falls from the rim track into a pocket */}
       <svg
         viewBox={`0 0 ${WHEEL_SIZE} ${WHEEL_SIZE}`}
-        className="pointer-events-none absolute inset-0 z-10 h-full w-full"
+        className="pointer-events-none absolute inset-0 z-10 h-full w-full overflow-visible"
       >
         <g
           style={{

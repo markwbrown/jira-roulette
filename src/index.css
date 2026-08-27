@@ -39,24 +39,36 @@ body {
 
 /*
  * The ball's radial position during a spin. Angular travel is a transform
- * transition on the parent group; this only moves the ball between the rim
- * track (cy 24) and the pocket floor (cy 43, matching BALL_POCKET_CY), with a
- * little bounce as it drops. Timed as a fraction of the spin duration so it
- * scales with reduced-motion spins too.
+ * transition on the parent group; this handles the radial path like a real
+ * throw: launched onto the outer apron (cy 2, overhanging the rim), a slow
+ * inward spiral as it loses speed, then it pops into the pockets and settles
+ * on the pocket floor (cy 43, matching BALL_POCKET_CY) with a bounce. Timed
+ * as fractions of the spin duration so it scales with reduced-motion spins.
  */
 @keyframes ball-run {
   0% {
     cy: 43px;
   }
-  6%,
-  74% {
-    cy: 24px;
+  5% {
+    cy: 2px;
   }
-  84% {
+  18% {
+    cy: 5px;
+  }
+  45% {
+    cy: 13px;
+  }
+  74% {
+    cy: 26px;
+  }
+  82% {
     cy: 43px;
   }
-  90% {
-    cy: 34px;
+  88% {
+    cy: 33px;
+  }
+  94% {
+    cy: 41px;
   }
   100% {
     cy: 43px;
