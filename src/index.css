@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --color-felt: #0b3b2a;
+  --color-felt-deep: #072b1f;
+  --color-felt-edge: #1b5b41;
+  --color-ivory: #f3ead8;
+  --color-ivory-muted: #b3a88d;
+  --color-brass: #c9a227;
+  --color-brass-bright: #e8c55a;
+  --color-pocket-red: #a31621;
+  --color-pocket-black: #211e1c;
+  --color-pocket-green: #0e6b45;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Public Sans", system-ui, -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  background-color: var(--color-felt);
+  background-image: radial-gradient(
+    ellipse at 50% 15%,
+    rgb(255 255 255 / 0.06),
+    transparent 65%
+  );
+  min-height: 100vh;
+  color: var(--color-ivory);
+  font-family: var(--font-body);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brass-bright);
+  outline-offset: 2px;
+}
+
+.winner-glow {
+  filter: drop-shadow(0 0 12px rgb(232 197 90 / 0.85));
+}
