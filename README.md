@@ -3,6 +3,13 @@
 Spin a roulette wheel over your Jira backlog. Filter by project, epic, sprint,
 and status; the wheel picks the next ticket and lets you assign it in one click.
 
+![The full flow: a wheel loaded with open tickets spins, lands on a winner, and the winner card pops up](docs/screenshots/spin.gif)
+
+When the wheel lands, the winner glows and its card appears with the ticket's
+status, description, epic, and a one-click assign action:
+
+![A landed spin: the winning pocket highlighted, with the winner card showing ticket details and an Assign to… button](docs/screenshots/winner.png)
+
 ## Setup
 
 ```bash
@@ -27,7 +34,9 @@ Open <http://localhost:5173/?mock=1> to play with ~40 fake tickets.
 - **Filters** build a JQL query (`POST /rest/api/3/search/jql`). The default
   status filter is "Not done" (`statusCategory IN ("To Do", "In Progress")`);
   "Refine statuses" lets you pick exact workflow statuses like *Ready for Dev*
-  or *Planning*.
+  or *Planning*:
+
+  ![The filter bar with the Refine statuses panel open, listing the project's workflow statuses grouped by category](docs/screenshots/filters.png)
 - **The wheel** alternates red/black pockets like a real rotor; an odd ticket
   count gets a single green "zero" pocket. The hub is the spin button.
 - **Assigning** calls `PUT /rest/api/3/issue/{key}/assignee`, so the token's
