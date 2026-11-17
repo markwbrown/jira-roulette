@@ -3,6 +3,9 @@
 Spin a roulette wheel over your Jira backlog. Filter by project, epic, sprint,
 and status; the wheel picks the next ticket and lets you assign it in one click.
 
+**🎰 [Try the live demo](https://markwbrown.github.io/jira-roulette/)** — runs
+on mock tickets, no Jira needed.
+
 ![The full flow: a wheel loaded with open tickets spins, lands on a winner, and the winner card pops up](docs/screenshots/spin.gif)
 
 When the ball drops, the winning pocket glows and its card appears with the
