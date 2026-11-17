@@ -9,9 +9,11 @@ import type {
 } from '../types/jira'
 import type { IssueSearchResult } from './issues'
 
+// ?mock=1 turns on mock mode locally; VITE_FORCE_MOCK=1 bakes it in at build
 export const mockEnabled =
-  typeof window !== 'undefined' &&
-  new URLSearchParams(window.location.search).has('mock')
+  import.meta.env.VITE_FORCE_MOCK === '1' ||
+  (typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).has('mock'))
 
 const MOCK_ORIGIN = 'https://mock.atlassian.net'
 
