@@ -3,6 +3,7 @@ import { pickWinnerIndex, spinTargets } from '../lib/wheel-math'
 import type { JiraIssue } from '../types/jira'
 import { EmptyState } from './EmptyState'
 import { ErrorBanner } from './ErrorBanner'
+import { RouletteBoard } from './RouletteBoard'
 import { RouletteWheel } from './RouletteWheel'
 import { ISSUE_FETCH_CAP } from '../api/issues'
 
@@ -152,6 +153,10 @@ export function WheelPanel({
         spinDisabled={spin.phase === 'spinning' || issues.length === 0}
         onSpin={handleSpin}
         onSpinEnd={handleSpinEnd}
+      />
+      <RouletteBoard
+        issues={wheelIssues}
+        winnerIndex={spin.phase === 'landed' ? spin.winnerIndex : null}
       />
     </div>
   )

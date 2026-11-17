@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  boardNumber,
   labelTier,
   midAngle,
   pickWinnerIndex,
+  pocketKind,
   segmentPath,
   spinTargets,
   winnerFromSpin,
@@ -58,6 +60,34 @@ describe('wheel + ball spin round-trip', () => {
     // with 30 samples across 10 buckets, an actually-random stop position
     // should hit well more than one bucket
     expect(finals.size).toBeGreaterThan(3)
+  })
+})
+
+describe('pocketKind / boardNumber', () => {
+  it('alternates red/black on even counts, no green', () => {
+    const kinds = [0, 1, 2, 3].map((i) => pocketKind(i, 4))
+    expect(kinds).toEqual(['red', 'black', 'red', 'black'])
+  })
+
+  it('turns the last pocket green on odd counts', () => {
+    expect(pocketKind(4, 5)).toBe('green')
+    expect(pocketKind(3, 5)).toBe('black')
+    expect(pocketKind(0, 1)).toBe('green')
+  })
+
+  it('numbers the green pocket 0 and the rest 1-based', () => {
+    expect(boardNumber(4, 5)).toBe(0)
+    expect(boardNumber(0, 5)).toBe(1)
+    expect(boardNumber(3, 5)).toBe(4)
+    expect(boardNumber(3, 4)).toBe(4)
+    expect(boardNumber(0, 1)).toBe(0)
+  })
+
+  it('board numbers are unique per wheel', () => {
+    for (const n of [1, 2, 7, 24, 61]) {
+      const nums = Array.from({ length: n }, (_, i) => boardNumber(i, n))
+      expect(new Set(nums).size).toBe(n)
+    }
   })
 })
 

@@ -6,8 +6,10 @@ import {
   CY,
   R,
   WHEEL_SIZE,
+  boardNumber,
   labelPlacement,
   labelTier,
+  pocketKind,
   segmentPath,
 } from '../lib/wheel-math'
 import { truncate } from '../lib/adf'
@@ -19,23 +21,19 @@ const POCKET_GREEN = '#0e6b45'
 const BRASS = '#c9a227'
 const IVORY = '#f3ead8'
 
-/**
- * Real roulette alternation: red/black pockets. An odd count would put two
- * reds side by side, so the last pocket becomes the wheel's single green
- * "zero" pocket instead.
- */
-function pocketColor(index: number, count: number): string {
-  if (count === 1) return POCKET_GREEN
-  if (count % 2 === 1 && index === count - 1) return POCKET_GREEN
-  return index % 2 === 0 ? POCKET_RED : POCKET_BLACK
+const POCKET_FILL: Record<ReturnType<typeof pocketKind>, string> = {
+  red: POCKET_RED,
+  black: POCKET_BLACK,
+  green: POCKET_GREEN,
 }
 
-function labelFor(issue: JiraIssue, count: number): string {
+function labelFor(issue: JiraIssue, index: number, count: number): string {
   const tier = labelTier(count)
   if (tier === 'none') return ''
-  if (tier === 'key') return issue.key
+  const n = boardNumber(index, count)
+  if (tier === 'key') return `${n} · ${issue.key}`
   const budget = count <= 8 ? 32 : count <= 16 ? 26 : 20
-  return truncate(`${issue.key} · ${issue.fields.summary}`, budget)
+  return `${n} · ${truncate(`${issue.key} · ${issue.fields.summary}`, budget)}`
 }
 
 function labelFontSize(count: number): number {
@@ -106,7 +104,7 @@ export function RouletteWheel({
                 <path
                   key={issue.id}
                   d={segmentPath(i, count)}
-                  fill={pocketColor(i, count)}
+                  fill={POCKET_FILL[pocketKind(i, count)]}
                   stroke={isWinner ? '#e8c55a' : BRASS}
                   strokeWidth={isWinner ? 3 : 1}
                   strokeOpacity={isWinner ? 1 : 0.55}
@@ -154,7 +152,7 @@ export function RouletteWheel({
                   fontWeight={500}
                   pointerEvents="none"
                 >
-                  {labelFor(issue, count)}
+                  {labelFor(issue, i, count)}
                 </text>
               )
             })}

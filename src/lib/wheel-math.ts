@@ -108,6 +108,25 @@ export function winnerFromSpin(
   return Math.floor(pocketAngle / (360 / count)) % count
 }
 
+export type PocketKind = 'red' | 'black' | 'green'
+
+/**
+ * Real roulette alternation: red/black pockets. An odd count would put two
+ * reds side by side, so the last pocket becomes the wheel's single green
+ * "zero" pocket instead.
+ */
+export function pocketKind(index: number, count: number): PocketKind {
+  if (count === 1) return 'green'
+  if (count % 2 === 1 && index === count - 1) return 'green'
+  return index % 2 === 0 ? 'red' : 'black'
+}
+
+/** Pocket number as shown on the wheel and the betting board: the green
+ * pocket is the table's 0, every other pocket is 1-based. */
+export function boardNumber(index: number, count: number): number {
+  return pocketKind(index, count) === 'green' ? 0 : index + 1
+}
+
 export type LabelTier = 'full' | 'key' | 'none'
 
 export function labelTier(count: number): LabelTier {
